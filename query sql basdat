@@ -1,0 +1,81 @@
+create tablespace agni06947
+datafile 'G:\Praktikum\agni06947.dfb'
+size 30M;
+
+create user febratama06947 identified by febratama890
+default tablespace agni06947
+quota 30M on agni06947;
+
+grant all privileges to febratama06947
+
+conn febratama06947/febratama890
+
+create table perusahaan_06947 (
+id_perusahaan Integer not null,
+nama_perusahaan varchar2(15),
+constraint PK_perusahaan primary key(id_perusahaan)
+	);
+alter table perusahaan_06947
+add (kode_pos Number(7))
+add (no_telp Number(12))
+add (alamat varchar2(20));
+
+create table bagian_06947 (
+id_bagian Integer not null,
+id_perusahaan Integer,
+nama_bagian varchar2(15),
+constraint PK_bagian primary key(id_bagian)
+	);
+alter table bagian_06947
+add constraint FK_id_perusahaan foreign key (id_perusahaan) references perusahaan_06947(id_perusahaan);
+
+create sequence id_perusahaan
+minvalue 0
+maxvalue 50
+start with 1
+increment by 1
+cache 20;
+
+create table pegawai_06947 (
+id_pegawai Integer not null,
+id_bagian Integer,
+nama_pegawai varchar2(20),
+alamat varchar2(20),
+no_telp Number(12),
+kode_pos Number(7),
+constraint PK_pegawai primary key(id_pegawai)
+);
+alter table pegawai_06947
+add constraint FK_id_bagian foreign key (id_bagian) references bagian_06947(id_bagian);
+
+alter table pegawai_06947 rename column nama_pegawai to nama_pegawai06947;
+
+alter table pegawai_06947
+modify no_telp number(12) not null unique;
+
+alter table pegawai_06947
+modify kode_pos Integer;
+
+savepoint first;
+
+rollback to first;
+
+commit;
+
+//view
+create view viu as select a.id_perusahaan, b.nama_bagian, c.nama_pegawai
+from perusahaan_06947 a join bagian_06947 b on a.id_perusahaan = b.id_perusahaan 
+join pegawai_06947 c on b.id_bagian = c.id_bagian where rownum <= 5 order by id_perusahaan asc;
+
+create view viu1 as select a.id_perusahaan, b.nama_bagian, c.nama_pegawai, c.id_pegawai 
+from perusahaan_06947 a left join bagian_06947 b on a.id_perusahaan = b.id_perusahaan 
+left join pegawai_06947 c on b.id_bagian = c.id_bagian where rownum <= (select count(id_pegawai) from pegawai_06947)order by id_perusahaan asc;
+
+create view viu2 as select a.id_perusahaan, b.nama_bagian, c.nama_pegawai, c.id_pegawai 
+from perusahaan_06947 a right join bagian_06947 b on a.id_perusahaan = b.id_perusahaan 
+right join pegawai_06947 c on b.id_bagian = c.id_bagian and rownum <= (select count(id_pegawai) from pegawai_06947)order by id_perusahaan desc;
+
+//cek view
+select * from viu;
+select * from viu1;
+select * from viu2;
